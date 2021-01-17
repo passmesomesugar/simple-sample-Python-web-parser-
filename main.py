@@ -29,9 +29,9 @@ news_items = soup.find_all(lambda tag: tag.name == 'div' and tag.get('class') ==
 for news_item in news_items:
     news_list.append(
         {
+            'date': news_item.find(class_='result-date').get_text(),
             'title': news_item.find(class_='result-title').find('a').get_text().strip(),
-            'link': HOST + news_item.find(class_='result-title').find('a').get('href'),
-            'date': news_item.find(class_='result-date').get_text()
+            'link': HOST + news_item.find(class_='result-title').find('a').get('href')
         }
     )
 # Информация попадает в лист со словарями.
