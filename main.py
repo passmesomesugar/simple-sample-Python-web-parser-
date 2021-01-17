@@ -9,11 +9,6 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36'
 }
 
-news_list1 = []
-
-
-# PAGINATION = input("Enter number of pages to be parsed, Введите количество страниц для парсинга")
-# PAGINATION = int(PAGINATION.strip())
 
 def get_html_page(url, params=''):
     r = requests.get(url, headers=HEADERS, params=params)
@@ -21,41 +16,45 @@ def get_html_page(url, params=''):
 
 
 def get_content(html):
-    soup1 = BeautifulSoup(html.content, 'html.parser')
-    news_items1 = soup1.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['result'])
+    soup = BeautifulSoup(html.content, 'html.parser')
+    # Лямбда что бы ограничить результаты только классом 'result' который содержит заголовки.
+    news_items = soup.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['result'])
     return_list = []
-    for news_item1 in news_items1:
+    for news_item in news_items:
         return_list.append(
             {
-                'date': news_item1.find(class_='result-date').get_text(),
-                'title': news_item1.find(class_='result-title').find('a').get_text().strip(),
-                'link': HOST + news_item1.find(class_='result-title').find('a').get('href')
+                'date': news_item.find(class_='result-date').get_text(),
+                'title': news_item.find(class_='result-title').find('a').get_text().strip(),
+                'link': HOST + news_item.find(class_='result-title').find('a').get('href')
             }
         )
     return return_list
 
 
-req = get_html_page(URL)
+def csv_writer(list_of_dictionaries):
+    keys = list_of_dictionaries[0].keys()
+    with open('parse_data.csv', 'w', newline='') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(list_of_dictionaries)
 
-some_list = get_content(req)
-print((len(some_list)))
-# soup = BeautifulSoup(req.content, 'html.parser')
 
-# Лямбда что бы ограничить результаты только классом 'result' который содержит заголовки.
-# В противном случае результатов будет слишком много.
-# news_items = soup.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['result'])
+def parser_main_func():
+    PAGINATION = input("Enter number of pages to be parsed, Введите количество страниц для парсинга")
+    PAGINATION = int(PAGINATION.strip())
+    req1 = get_html_page(URL)
+    if req1.status_code == 200:
+        list_of_items = []
+        for page in range(1, PAGINATION):
+            print(f'Parsing page, идет парсинг страницы:{page}')
+            html = get_html_page(URL, params={'page': page})
+            list_of_items.extend(get_content(html))
+        csv_writer(list_of_items)
+        print('done')
+    else:
+        print('Error')
 
-# for news_item in news_items:
-#     news_list.append(
-#         {
-#             'date': news_item.find(class_='result-date').get_text(),
-#             'title': news_item.find(class_='result-title').find('a').get_text().strip(),
-#             'link': HOST + news_item.find(class_='result-title').find('a').get('href')
-#         }
-#     )
-# Информация попадает в лист со словарями.
-keys = some_list[0].keys()
-with open('parse_data.csv', 'w', newline='') as output_file:
-    dict_writer = csv.DictWriter(output_file, keys)
-    dict_writer.writeheader()
-    dict_writer.writerows(some_list)
+
+# req = get_html_page(URL)
+# some_list = get_content(req)
+parser_main_func()
