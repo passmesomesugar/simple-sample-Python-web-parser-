@@ -33,7 +33,7 @@ def get_content(html):
 
 def csv_writer(list_of_dictionaries):
     keys = list_of_dictionaries[0].keys()
-    with open('parse_data.csv', 'w', newline='') as output_file:
+    with open('parse_data.csv', 'w', newline='', encoding="utf-8") as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
         dict_writer.writeheader()
         dict_writer.writerows(list_of_dictionaries)
@@ -41,16 +41,16 @@ def csv_writer(list_of_dictionaries):
 
 def parser_main_func():
     PAGINATION = input("Enter number of pages to be parsed, Введите количество страниц для парсинга")
-    PAGINATION = int(PAGINATION.strip())
-    req1 = get_html_page(URL)
-    if req1.status_code == 200:
+    PAGINATION = int(PAGINATION.strip()) + 1
+    req = get_html_page(URL)
+    if req.status_code == 200:
         list_of_items = []
         for page in range(1, PAGINATION):
-            print(f'Parsing page, идет парсинг страницы:{page}')
+            print(f'Parsing page:{page}, идет парсинг страницы:{page}')
             html = get_html_page(URL, params={'page': page})
             list_of_items.extend(get_content(html))
         csv_writer(list_of_items)
-        print('done')
+        print('Finished. Готово.')
     else:
         print('Error')
 
