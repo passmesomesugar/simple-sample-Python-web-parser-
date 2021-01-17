@@ -55,6 +55,4 @@ def parser_main_func():
         print('Error')
 
 
-# req = get_html_page(URL)
-# some_list = get_content(req)
 parser_main_func()
